@@ -5,7 +5,7 @@ const app = express();
 const config = {
     sqlitePath: './gtfs.db',
     agencies: [{ 
-    url: 'https://transport.api.test.act.gov.au/gtfs/data/gtfs/v2/static',
+    url: 'https://transport.api.act.gov.au/gtfs/data/gtfs/v2/gtfs.zip',
     customHeaders: { 'Authorization': `Basic ${process.env.API_KEY}` }
     }]
 };
