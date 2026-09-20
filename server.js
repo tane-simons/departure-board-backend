@@ -6,7 +6,7 @@ const config = {
     sqlitePath: './gtfs.db',
     agencies: [{ 
     url: 'https://transport.api.act.gov.au/gtfs/data/gtfs/v2/gtfs.zip',
-    customHeaders: { 'Authorization': `Basic ${process.env.API_KEY}` }
+    headers: { 'Authorization': `Basic ${process.env.API_KEY}` }
     }]
 };
 
