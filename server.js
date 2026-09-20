@@ -2,6 +2,8 @@ const express = require('express');
 const { importGtfs, getStoptimes } = require('gtfs');
 const fs = require('fs/promises');
 const app = express();
+const cors = require('cors');
+app.use(cors());
 
 const config = {
     sqlitePath: './gtfs.db',
