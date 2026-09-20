@@ -14,7 +14,7 @@ const config = {
 
 app.get('/departures/:stopId', async (req, res) => {
     try {
-        const departures = getStoptimes({ stop_id: req.params.stopId }, [], { sort: { departure_time: 1 } });
+        const departures = getStoptimes({ stop_id: req.params.stopId }, [], [['departure_time', 'ASC']]);
         res.json(departures.slice(0, 10));
     } catch (err) {
         res.status(500).json({ error: err.message });
