@@ -1,5 +1,5 @@
 const express = require('express');
-const { importGtfs, getStoptimes, openDb } = require('gtfs');
+const { importGtfs, openDb, getDb } = require('gtfs');
 const fs = require('fs/promises');
 const app = express();
 const cors = require('cors');
@@ -14,8 +14,32 @@ const config = {
 
 app.get('/departures/:stopId', async (req, res) => {
     try {
-        const departures = getStoptimes({ stop_id: req.params.stopId }, [], [['departure_time', 'ASC']]);
-        res.json(departures.slice(0, 10));
+        const db = getDb();
+        const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }));
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const currentTime = `${hours}:${minutes}:${seconds}`;
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const currentDay = days[now.getDay()];
+        const query = `
+            SELECT 
+                st.*, r.*, t.*, s.*
+            FROM stop_times st
+            JOIN trips t ON st.trip_id = t.trip_id
+            JOIN routes r ON t.route_id = r.route_id
+            JOIN stops s ON st.stop_id = s.stop_id
+            JOIN calendar c ON t.service_id = c.service_id
+            WHERE st.stop_id = ? 
+                AND st.departure_time >= ?
+                AND c.${currentDay} = 1
+            GROUP BY st.departure_time, r.route_short_name
+            ORDER BY st.departure_time ASC
+            LIMIT 20
+        `;
+        
+        const departures = db.prepare(query).all(req.params.stopId, currentTime);
+        res.json(departures);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -26,7 +50,7 @@ const PORT = process.env.PORT || 3000;
 (async () => {
     try {
         console.log('Downloading GTFS data...');
-        const response = await fetch('https://transport.api.test.act.gov.au/gtfs/data/gtfs/v2/gtfs.zip', {
+        const response = await fetch('https://transport.api.act.gov.au/gtfs/data/gtfs/v2/gtfs.zip', {
             headers: { 'Authorization': `Basic ${process.env.API_KEY}` }
         });
 
