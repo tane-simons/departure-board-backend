@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 3000;
 (async () => {
     try {
         console.log('Downloading GTFS data...');
-        const response = await fetch('https://transport.api.act.gov.au/gtfs/data/gtfs/v2/gtfs.zip', {
+        const response = await fetch('https://transport.api.test.act.gov.au/gtfs/data/gtfs/v2/gtfs.zip', {
             headers: { 'Authorization': `Basic ${process.env.API_KEY}` }
         });
 
