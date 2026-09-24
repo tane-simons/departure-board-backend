@@ -1,5 +1,5 @@
 const express = require('express');
-const { importGtfs, openDb, getDb } = require('gtfs');
+const { importGtfs, openDb } = require('gtfs');
 const fs = require('fs/promises');
 const app = express();
 const cors = require('cors');
@@ -12,16 +12,19 @@ const config = {
     }]
 };
 
+let db;
+
 app.get('/departures/:stopId', async (req, res) => {
     try {
-        const db = getDb();
         const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }));
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const seconds = String(now.getSeconds()).padStart(2, '0');
         const currentTime = `${hours}:${minutes}:${seconds}`;
+        
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const currentDay = days[now.getDay()];
+        
         const query = `
             SELECT 
                 st.*, r.*, t.*, s.*
@@ -64,7 +67,7 @@ const PORT = process.env.PORT || 3000;
         console.log('Importing GTFS data...');
         await importGtfs(config);
         
-        openDb(config); 
+        db = openDb(config);
 
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
