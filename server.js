@@ -1,5 +1,5 @@
 const express = require('express');
-const { importGtfs, getStoptimes } = require('gtfs');
+const { importGtfs, getStoptimes, openDb } = require('gtfs');
 const fs = require('fs/promises');
 const app = express();
 const cors = require('cors');
@@ -22,7 +22,8 @@ app.get('/departures/:stopId', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, async () => {
+
+(async () => {
     try {
         console.log('Downloading GTFS data...');
         const response = await fetch('https://transport.api.act.gov.au/gtfs/data/gtfs/v2/gtfs.zip', {
@@ -38,8 +39,13 @@ app.listen(PORT, async () => {
 
         console.log('Importing GTFS data...');
         await importGtfs(config);
-        console.log(`Server running on port ${PORT}`);
+        
+        openDb(config); 
+
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
     } catch (err) {
         console.error('Startup error:', err.message);
     }
-});
+})();
